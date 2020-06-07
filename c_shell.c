@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <readline/readline.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <ctype.h>
@@ -353,7 +352,7 @@ void parse_and_run(char command[], char **c)
         //printf("Stripping white spaces\n");
         stripping_whitespace(c[x],trimmed_temp);        
 
-        printf("Command: %s with the length is %ld \n",c[x],strlen(c[x]));
+        //printf("Command: %s with the length is %ld \n",c[x],strlen(c[x]));
     }
 
     stripping_whitespace(infile,trimmed_temp);
@@ -361,17 +360,17 @@ void parse_and_run(char command[], char **c)
 
 
     execute(c,command_index,infile,outfile,background);
-    
-
 }
 
 
 int main()
 {
     char command[MAX_LENGTH];
-
+    char lastest_command[MAX_LENGTH]; //use to store the last command that it ran
 	char **c = malloc(40); // we can have up to 40 commands
 
+
+    lastest_command[0] = '\0';
 	int should_run = 1;
 
 	while (should_run) 
@@ -391,8 +390,21 @@ int main()
 			continue;
 		}
 		
+        if (strcmp(command,"!!") == 0) //user wants to run the last command
+        {
+            if (strlen(lastest_command) <= 1)
+            {
+                printf("No command has been ran yet!\n");                
+            }
+            else
+                parse_and_run(lastest_command, c);
+        }
 		//Parse commands and execute 
-		parse_and_run(command, c);
+        else
+		{
+            strcpy(lastest_command, command);
+            parse_and_run(command, c);
+        }
     }
     
     return 0;
